@@ -12,6 +12,22 @@ public class FirstPersonController : NetworkBehaviour
     [SerializeField] private float turnSmoothTime = 0.1f;
     [SerializeField] private float speed = 5f;
 
+    public Vector2 look;
+    public bool cursorInputForLook = true;
+
+    public void OnLook(InputValue value)
+    {
+        if (cursorInputForLook)
+        {
+            LookInput(value.Get<Vector2>());
+        }
+    }
+
+    public void LookInput(Vector2 newLookDirection)
+    {
+        look = newLookDirection;
+    }
+
     public override void OnNetworkSpawn()
     {
         _controller = GetComponent<CharacterController>();
