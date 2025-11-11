@@ -2,7 +2,7 @@
   "dependencies": {
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.burst": "1.8.25",
-    "com.unity.cinemachine": "2.10.4",
+    "com.unity.cinemachine": "3.1.5",
     "com.unity.collab-proxy": "2.9.3",
     "com.unity.collections": "2.6.2",
     "com.unity.ext.nunit": "2.0.5",
@@ -15,6 +15,7 @@
     "com.unity.netcode.gameobjects": "2.6.0",
     "com.unity.nuget.mono-cecil": "1.11.5",
     "com.unity.package-validation-suite": "0.22.0-preview",
+    "com.unity.probuilder": "6.0.7",
     "com.unity.render-pipelines.core": "17.1.0",
     "com.unity.render-pipelines.universal": "17.1.0",
     "com.unity.render-pipelines.universal-config": "17.0.3",
