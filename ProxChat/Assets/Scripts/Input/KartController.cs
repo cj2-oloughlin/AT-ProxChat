@@ -118,8 +118,8 @@ namespace Kart
                 {
                     rb.constraints = RigidbodyConstraints.FreezeRotationX;
 
-                    float newZ = MathF.SmoothDamp(rb.angularVelocity.z, 0, ref brakeVelocity, 1f);
-                    rb.linearVelocity = rb.linearVelocity.With(newZ);
+                    float newZ = Mathf.SmoothDamp(rb.linearVelocity.z, 0, ref brakeVelocity, 1f);
+                    //rb.linearVelocity = rb.linearVelocity.With(newZ);
 
                     axleInfo.leftWheel.brakeTorque = brakeTorque;
                     axleInfo.rightWheel.brakeTorque = brakeTorque;
