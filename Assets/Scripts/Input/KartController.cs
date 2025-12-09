@@ -2,6 +2,7 @@ using System;
 //using Unity.VisualScripting;
 using UnityEngine;
 using Utilities;
+using System.Linq;
 using UnityEngine.InputSystem;
 using static PlayerInputActions;
 
@@ -111,7 +112,7 @@ namespace Kart
             }
         }
 
-        private void HandleGroundedMovement(float verticalInput, float horizontalInput)
+        void HandleGroundedMovement(float verticalInput, float horizontalInput)
         {
             //Turning - Picks a point on the defined curve based on the kart's speed
             if (Mathf.Abs(verticalInput) > 0.1f || Mathf.Abs(kartVelocity.z) > 1)
@@ -120,19 +121,33 @@ namespace Kart
                 rb.AddTorque(Vector3.up * horizontalInput * Mathf.Sign(kartVelocity.z) * turnStrength * 100f * turnMultiplier);
             }
 
-            //Acceleration -
+            //Acceleration - Increments the player's speed (while normalizing it) until the maximum speed is achieved
             if (!input.IsBraking)
             {
-                //float targetS
-                    ;
+                float targetSpeed = verticalInput * maxSpeed;
+                Vector3 forwardWithoutY = transform.forward.With(y: 0).normalized;
+                rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, forwardWithoutY * targetSpeed, Time.deltaTime);
             }
+
+            //Downforce - Keeps the kart down while accounting for speed - uses lateral Gs to scale if the kart drifts
+            float speedFactor = Mathf.Clamp01(rb.linearVelocity.magnitude / maxSpeed);
+            float lateralG = Mathf.Abs(Vector3.Dot(rb.linearVelocity, transform.right));
+            float downForceFactor = Mathf.Max(speedFactor, lateralG / lateralGScale);
+            rb.AddForce(-transform.up * downForce * rb.mass * downForceFactor);
+
+            //Shift Center of Mass - Adjusting the Physics of the kart
+            float speed = rb.linearVelocity.magnitude;
+            Vector3 centerOfMassAdjustment = (speed > thresholdSpeed)
+                ? new Vector3(0f, 0f, Mathf.Abs(verticalInput) > 0.1f ? Mathf.Sign(verticalInput) * centerOfMassOffset : 0f)
+                : Vector3.zero;
+            rb.centerOfMass = originalCenterOfMass + centerOfMassAdjustment;
 
 
 
 
         }
 
-        private void UpdateBanking(float horizontalInput) //Bank the kart when the player is in a turn
+        void UpdateBanking(float horizontalInput) //Bank the kart when the player is in a turn
         {
             float targetBankAngle = horizontalInput * -maxBankAngle;
             Vector3 currentEuler = transform.localEulerAngles;
@@ -140,7 +155,7 @@ namespace Kart
             transform.localEulerAngles = currentEuler;
         }
 
-        private void HandleAirborneMovement(float verticalInput, float horizontalInput) //Applies gravity when the kart isn't grounded
+        void HandleAirborneMovement(float verticalInput, float horizontalInput) //Applies gravity when the kart isn't grounded
         {
             rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, rb.linearVelocity + Vector3.down * gravity, Time.deltaTime * gravity);
         }
@@ -158,7 +173,7 @@ namespace Kart
             }
         }
 
-        private void UpdateWheelVisuals(WheelCollider collider)
+        void UpdateWheelVisuals(WheelCollider collider)
         {
             if (collider.transform.childCount == 0) return;
 
@@ -206,6 +221,8 @@ namespace Kart
 
                     axleInfo.leftWheel.brakeTorque = brakeTorque;
                     axleInfo.rightWheel.brakeTorque = brakeTorque;
+                    ApplyDriftFriction(axleInfo.leftWheel);
+                    ApplyDriftFriction(axleInfo.rightWheel);
                 }
                 else
                 {
@@ -213,9 +230,36 @@ namespace Kart
 
                     axleInfo.leftWheel.brakeTorque = 0;
                     axleInfo.rightWheel.brakeTorque = 0;
+                    ResetDriftFriction(axleInfo.leftWheel);
+                    ResetDriftFriction(axleInfo.rightWheel);
                 }
 
             }
+        }
+
+        void ResetDriftFriction(WheelCollider wheel)
+        {
+            AxleInfo axleInfo = axleInfos.FirstOrDefault(axle => axle.leftWheel == wheel || axle.rightWheel == wheel);
+            if (axleInfo == null) return; //Bails out
+
+            wheel.forwardFriction = axleInfo.originalForwardFriction;
+            wheel.sidewaysFriction = axleInfo.originalSidewaysFriction;
+        }
+
+        void ApplyDriftFriction(WheelCollider wheel)
+        {
+            if(wheel.GetGroundHit(out var hit))
+            {
+                wheel.forwardFriction = UpdateFriction(wheel.forwardFriction);
+                wheel.sidewaysFriction = UpdateFriction(wheel.sidewaysFriction);
+                isGrounded = true;
+            }
+        }
+
+        private WheelFrictionCurve UpdateFriction(WheelFrictionCurve friction)
+        {
+            friction.stiffness = input.IsBraking ? Mathf.SmoothDamp(friction.stiffness, .5f, ref driftVelocity, Time.deltaTime * 2f) : 1f;
+            return friction;
         }
 
 
