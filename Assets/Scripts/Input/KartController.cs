@@ -1,6 +1,10 @@
 using System;
-using Unity.VisualScripting;
+//using Unity.VisualScripting;
 using UnityEngine;
+using Utilities;
+using UnityEngine.InputSystem;
+using static PlayerInputActions;
+
 
 namespace Kart
 {
@@ -28,20 +32,53 @@ namespace Kart
 
         [Header("Steering Attributes")]
         [SerializeField] float maxSteeringAngle = 30f;
+        [SerializeField] AnimationCurve turncurve;
+        [SerializeField] float turnStrength = 1500f;
 
         [Header("Braking And Drifting Attributes")]
+        [SerializeField] float driftSteerMultiplier = 1.5f; //Steering while Drifting
         [SerializeField] float brakeTorque = 10000f;
 
+        [Header("Physics")]
+        [SerializeField] Transform centerOfMass;
+        [SerializeField] float downForce = 100f;
+        [SerializeField] float gravity = Physics.gravity.y;
+        [SerializeField] float lateralGScale = 10f; //Scaling factor
+
+        [Header("Banking Attributes")]
+        [SerializeField] float maxBankAngle = 5f;
+        [SerializeField] float bankSpeed = 2f;
+
+        [Header("References")]
         [SerializeField] InputReader input;
         Rigidbody rb;
 
+
+        Vector3 kartVelocity;
         float brakeVelocity;
+        float driftVelocity;
+
+        RaycastHit hit;
+
+        const float thresholdSpeed = 10f;
+        const float centerOfMassOffset = -0.5f;
+        Vector3 originalCenterOfMass;
+
+        public bool isGrounded;
+        public Vector3 Velocity => kartVelocity;
+        public float MaxSpeed => maxSpeed;
+
+
 
 
         void Start()
         {
             rb = GetComponent<Rigidbody>();
             input.Enable();
+
+            rb.centerOfMass = centerOfMass.localPosition;
+            originalCenterOfMass = centerOfMass.localPosition;
+
 
             foreach (AxleInfo axleInfo in axleInfos)
             {
@@ -60,6 +97,52 @@ namespace Kart
             float steering = maxSteeringAngle * horizontalInput;
 
             UpdateAxles(motor, steering);
+            UpdateBanking(horizontalInput);
+
+            kartVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+
+            if (isGrounded)
+            {
+                HandleGroundedMovement(verticalInput, horizontalInput);
+            }
+            else
+            {
+                HandleAirborneMovement(verticalInput, horizontalInput);
+            }
+        }
+
+        private void HandleGroundedMovement(float verticalInput, float horizontalInput)
+        {
+            //Turning - Picks a point on the defined curve based on the kart's speed
+            if (Mathf.Abs(verticalInput) > 0.1f || Mathf.Abs(kartVelocity.z) > 1)
+            {
+                float turnMultiplier = Mathf.Clamp01(turncurve.Evaluate(kartVelocity.magnitude / maxSpeed));
+                rb.AddTorque(Vector3.up * horizontalInput * Mathf.Sign(kartVelocity.z) * turnStrength * 100f * turnMultiplier);
+            }
+
+            //Acceleration -
+            if (!input.IsBraking)
+            {
+                //float targetS
+                    ;
+            }
+
+
+
+
+        }
+
+        private void UpdateBanking(float horizontalInput) //Bank the kart when the player is in a turn
+        {
+            float targetBankAngle = horizontalInput * -maxBankAngle;
+            Vector3 currentEuler = transform.localEulerAngles;
+            currentEuler.z = Mathf.LerpAngle(currentEuler.z, targetBankAngle, Time.deltaTime * bankSpeed);
+            transform.localEulerAngles = currentEuler;
+        }
+
+        private void HandleAirborneMovement(float verticalInput, float horizontalInput) //Applies gravity when the kart isn't grounded
+        {
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, rb.linearVelocity + Vector3.down * gravity, Time.deltaTime * gravity);
         }
 
         void UpdateAxles(float motor, float steering)
@@ -119,7 +202,7 @@ namespace Kart
                     rb.constraints = RigidbodyConstraints.FreezeRotationX;
 
                     float newZ = Mathf.SmoothDamp(rb.linearVelocity.z, 0, ref brakeVelocity, 1f);
-                    //rb.linearVelocity = rb.linearVelocity.With(newZ);
+                    rb.linearVelocity = rb.linearVelocity.With(newZ);
 
                     axleInfo.leftWheel.brakeTorque = brakeTorque;
                     axleInfo.rightWheel.brakeTorque = brakeTorque;

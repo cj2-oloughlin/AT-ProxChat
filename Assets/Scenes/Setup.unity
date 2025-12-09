@@ -1289,7 +1289,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b192c8442b11a9349801a0d388d49fe0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 722918897}
+      addedObject: {fileID: 722918900}
   m_SourcePrefab: {fileID: 100100000, guid: b192c8442b11a9349801a0d388d49fe0, type: 3}
 --- !u!1001 &401567848
 PrefabInstance:
@@ -1963,7 +1963,7 @@ Transform:
   m_GameObject: {fileID: 452472055}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.5735764, z: 0, w: 0.8191521}
-  m_LocalPosition: {x: -963.1908, y: 143, z: 1792.7394}
+  m_LocalPosition: {x: -963.1908, y: 11, z: 1792.7394}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2843,8 +2843,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b192c8442b11a9349801a0d388d49fe0, type: 3}
   m_PrefabInstance: {fileID: 387843352}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &722918897
-BoxCollider:
+--- !u!64 &722918900
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -2861,9 +2861,10 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10, y: 1, z: 20.000004}
-  m_Center: {x: 5, y: 0.5, z: 10.000002}
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 6824312419534961008, guid: b192c8442b11a9349801a0d388d49fe0, type: 3}
 --- !u!1001 &724005885
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -76108,7 +76109,7 @@ Transform:
   m_GameObject: {fileID: 1755425728}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.5735764, z: 0, w: 0.8191521}
-  m_LocalPosition: {x: -935, y: 137, z: 1803}
+  m_LocalPosition: {x: -935, y: 5, z: 1803}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -76160,11 +76161,26 @@ MonoBehaviour:
     rightWheel: {fileID: 1028210012}
     Motor: 1
     steering: 0
-  maxMotorTorque: 30000
-  maxSpeed: 2500
-  maxSteeringAngle: 45
-  brakeTorque: 15000
+  maxMotorTorque: 3000
+  maxSpeed: 100
+  maxSteeringAngle: 30
+  turncurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  turnStrength: 1500
+  driftSteerMultiplier: 1.5
+  brakeTorque: 10000
+  centerOfMass: {fileID: 0}
+  downForce: 100
+  gravity: -9.81
+  lateralGScale: 10
+  maxBankAngle: 5
+  bankSpeed: 2
   input: {fileID: 11400000, guid: 28887e6abfe13874fa7ddff8b97d5a28, type: 2}
+  isGrounded: 0
 --- !u!81 &1755425733
 AudioListener:
   m_ObjectHideFlags: 0
@@ -76692,7 +76708,7 @@ Transform:
   m_GameObject: {fileID: 1969244774}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.5735764, z: 0, w: 0.8191521}
-  m_LocalPosition: {x: -963.1908, y: 143, z: 1792.7394}
+  m_LocalPosition: {x: -963.1908, y: 11, z: 1792.7394}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
