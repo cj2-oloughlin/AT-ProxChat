@@ -1,5 +1,4 @@
 using System;
-//using Unity.VisualScripting;
 using UnityEngine;
 using Utilities;
 using System.Linq;
@@ -19,6 +18,9 @@ namespace Kart
         public WheelFrictionCurve originalForwardFriction;
         public WheelFrictionCurve originalSidewaysFriction;
     }
+
+
+
 
 
 
@@ -51,7 +53,8 @@ namespace Kart
         [SerializeField] float bankSpeed = 2f;
 
         [Header("References")]
-        [SerializeField] InputReader input;
+        [SerializeField] InputReader playerInput;
+        [SerializeField] IDrive input;
         Rigidbody rb;
 
 
@@ -70,7 +73,21 @@ namespace Kart
         public float MaxSpeed => maxSpeed;
 
 
+        private void Awake()
+        {
+            if (playerInput is IDrive driveInput)
+            {
+                input = driveInput;
+            }
+            else
+            {
+                Debug.Log("Using AI Kart Input System");
+                var aiInput = gameObject.AddComponent<AIInput>();
+                //Configures the AI kart input
+                input = aiInput;
 
+            }
+        }
 
         void Start()
         {
