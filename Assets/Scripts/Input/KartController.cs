@@ -135,7 +135,7 @@ namespace Kart
             if (Mathf.Abs(verticalInput) > 0.1f || Mathf.Abs(kartVelocity.z) > 1)
             {
                 float turnMultiplier = Mathf.Clamp01(turncurve.Evaluate(kartVelocity.magnitude / maxSpeed));
-                rb.AddTorque(Vector3.up * horizontalInput * Mathf.Sign(kartVelocity.z) * turnStrength * 100f * turnMultiplier);
+                rb.AddTorque(Vector3.up * (horizontalInput * Mathf.Sign(kartVelocity.z) * turnStrength * 100f * turnMultiplier));
             }
 
             //Acceleration - Increments the player's speed (while normalizing it) until the maximum speed is achieved
@@ -211,8 +211,9 @@ namespace Kart
         {
             if(axleInfo.steering)
             {
-                axleInfo.leftWheel.steerAngle = steering;
-                axleInfo.rightWheel.steerAngle = steering;
+                float steeringMultiplier = input.IsBraking ? driftSteerMultiplier : 1f;
+                axleInfo.leftWheel.steerAngle = steering * steeringMultiplier;
+                axleInfo.rightWheel.steerAngle = steering * steeringMultiplier;
             }
         }
 
@@ -234,7 +235,7 @@ namespace Kart
                     rb.constraints = RigidbodyConstraints.FreezeRotationX;
 
                     float newZ = Mathf.SmoothDamp(rb.linearVelocity.z, 0, ref brakeVelocity, 1f);
-                    rb.linearVelocity = rb.linearVelocity.With(newZ);
+                    rb.linearVelocity = rb.linearVelocity.With(z: newZ);
 
                     axleInfo.leftWheel.brakeTorque = brakeTorque;
                     axleInfo.rightWheel.brakeTorque = brakeTorque;
@@ -273,7 +274,7 @@ namespace Kart
             }
         }
 
-        private WheelFrictionCurve UpdateFriction(WheelFrictionCurve friction)
+        WheelFrictionCurve UpdateFriction(WheelFrictionCurve friction)
         {
             friction.stiffness = input.IsBraking ? Mathf.SmoothDamp(friction.stiffness, .5f, ref driftVelocity, Time.deltaTime * 2f) : 1f;
             return friction;
@@ -285,7 +286,7 @@ namespace Kart
         {
             return input switch
             {
-                >=  .7f => 1f,
+                >= .7f => 1f,
                 <= -.7f => -1f,
                 _ => input
             };
