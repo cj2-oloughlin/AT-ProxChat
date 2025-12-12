@@ -54,7 +54,10 @@ namespace Kart
 
         [Header("References")]
         [SerializeField] InputReader playerInput;
-        [SerializeField] IDrive input;
+        [SerializeField] Circuit circuit;
+        [SerializeField] AIDriverData driverData;
+
+        IDrive input;
         Rigidbody rb;
 
 
@@ -83,7 +86,8 @@ namespace Kart
             {
                 Debug.Log("Using AI Kart Input System");
                 var aiInput = gameObject.AddComponent<AIInput>();
-                //Configures the AI kart input
+                aiInput.AddDriverData(driverData);
+                aiInput.AddCircuit(circuit);
                 input = aiInput;
 
             }
