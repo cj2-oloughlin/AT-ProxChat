@@ -76,7 +76,7 @@ namespace Kart
         public float MaxSpeed => maxSpeed;
 
 
-        private void Awake()
+        void Awake()
         {
             if (playerInput is IDrive driveInput)
             {
@@ -91,6 +91,11 @@ namespace Kart
                 input = aiInput;
 
             }
+        }
+
+        public void SetInput(IDrive input)
+        {
+            this.input = input;
         }
 
         void Start()

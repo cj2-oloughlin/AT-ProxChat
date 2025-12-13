@@ -9,6 +9,7 @@ namespace Kart
     public class Circuit : ScriptableObject
     {
         public Transform[] waypoints;
+        public Transform[] spawnPoints;
     }
 }
 
